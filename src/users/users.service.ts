@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -17,18 +17,14 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    // El DTO ya validó los campos requeridos y formatos
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    
     const user = this.usersRepository.create({
       email: createUserDto.email,
       name: createUserDto.name,
       password: hashedPassword,
-      role: createUserDto.role || 'user', // Valor por defecto desde DTO
-      permissions: createUserDto.permissions || [], // Valor por defecto
-      // TypeORM manejará automáticamente createdAt y updatedAt
+      role: createUserDto.role || 'user',
+      permissions: createUserDto.permissions || [],
     });
-
     return this.usersRepository.save(user);
   }
 
@@ -47,9 +43,18 @@ export class UsersService {
   async updatePermissions(userId: number, permissions: string[]): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('Usuario no encontrado');
     }
     user.permissions = permissions;
     return this.usersRepository.save(user);
+  }
+
+  async deleteByEmail(email: string): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException(`Usuario con email ${email} no encontrado`);
+    }
+    await this.usersRepository.remove(user);
+    return { message: 'Usuario eliminado correctamente' };
   }
 }
