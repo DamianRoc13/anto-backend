@@ -1,10 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid') 
+  id: string;
 
   @Column({ unique: true })
   email: string;
@@ -23,7 +24,7 @@ export class User {
   })
   role: 'admin' | 'user';
 
-  @Column('simple-array', { nullable: true }) // Cambié de simple-json a simple-array
+  @Column('simple-array', { nullable: true }) 
   permissions: string[];
 
   @CreateDateColumn()
@@ -32,10 +33,14 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // Constructor para creación fácil
   constructor(partial?: Partial<User>) {
     if (partial) {
       Object.assign(this, partial);
+      if (!this.id) {
+        this.id = uuidv4();
+      }
+    } else {
+      this.id = uuidv4();
     }
   }
 }

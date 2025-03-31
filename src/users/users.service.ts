@@ -40,7 +40,7 @@ export class UsersService {
     return this.usersRepository.find();
   }
 
-  async updatePermissions(userId: number, permissions: string[]): Promise<User> {
+  async updatePermissions(userId: string , permissions: string[]): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');

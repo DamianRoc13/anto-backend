@@ -38,10 +38,10 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updatePermissionsDto: UpdatePermissionsDto,
   ) {
-    return this.usersService.updatePermissions(+id, updatePermissionsDto.permissions);
+    return this.usersService.updatePermissions(id, updatePermissionsDto.permissions);
   }
 
-  // 👇 Nuevo endpoint para eliminar por email
+  
   @Delete('delete')
   @Roles('admin')
   @ApiBody({ type: DeleteUserDto })
