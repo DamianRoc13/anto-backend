@@ -28,7 +28,7 @@ export class Headcount {
   nombre: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  sueldo: number;
+  sueldo: number ;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   kpi: number;
