@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HeadcountModule } from './headcount/headcount.module';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        // Usar DATABASE_URL si existe, de lo contrario usar variables individuales
+        
         const databaseUrl = configService.get<string>('DATABASE_URL');
         if (databaseUrl) {
           return {
@@ -24,14 +25,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
               rejectUnauthorized: false,
             },
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: configService.get<string>('NODE_ENV') !== 'production', // Auto-sync solo en desarrollo
+            synchronize: configService.get<string>('NODE_ENV') !== 'production', 
             extra: {
-              connectionLimit: 10, // Límite de conexiones para el pool
+              connectionLimit: 10, 
             }
           };
         }
 
-        // Fallback a variables individuales si DATABASE_URL no está disponible
         return {
           type: 'postgres',
           host: configService.get<string>('PGHOST'),
@@ -54,6 +54,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     
     AuthModule,
     UsersModule,
+    HeadcountModule, // Agregar el nuevo módulo
   ],
 })
 export class AppModule {}

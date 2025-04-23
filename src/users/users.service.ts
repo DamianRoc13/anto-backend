@@ -49,10 +49,10 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async deleteByEmail(email: string): Promise<{ message: string }> {
-    const user = await this.usersRepository.findOne({ where: { email } });
+  async deleteById(id: string): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new NotFoundException(`Usuario con email ${email} no encontrado`);
+      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
     await this.usersRepository.remove(user);
     return { message: 'Usuario eliminado correctamente' };

@@ -48,6 +48,6 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Usuario eliminado' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   deleteByEmail(@Body() deleteUserDto: DeleteUserDto) {
-    return this.usersService.deleteByEmail(deleteUserDto.email);
+    return this.usersService.deleteById(deleteUserDto.id);
   }
 }
