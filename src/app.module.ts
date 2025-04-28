@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HeadcountModule } from './headcount/headcount.module';
+import { KpiModule } from './kpi/kpi.module';
 
 @Module({
   imports: [
@@ -54,7 +55,8 @@ import { HeadcountModule } from './headcount/headcount.module';
     
     AuthModule,
     UsersModule,
-    HeadcountModule, // Agregar el nuevo módulo
+    HeadcountModule,
+    KpiModule,
   ],
 })
 export class AppModule {}
