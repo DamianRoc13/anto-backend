@@ -40,7 +40,7 @@ export class KpiService {
           cargoActividad: hc.cargoActividad,
           sueldo: hc.sueldo,
           kpi: hc.kpi,
-          grupoCentrosCostos: hc.grupoCentrosCostos || 'Sin grupo', // Manejo de NULL
+          grupoCentrosCostos: hc.grupoCentrosCostos || 'Sin grupo', 
           calificacionKPI: 0,
           totalKPI: 0,
           observaciones: '',
@@ -61,30 +61,31 @@ export class KpiService {
     observaciones: string,
     headers: Record<string, string>
   ): Promise<KPI> {
-    // Validación mejorada
-    if (calificacionKPI === undefined || calificacionKPI === null) {
-      throw new BadRequestException('La calificación es requerida');
+   
+    if (isNaN(calificacionKPI)) {
+      throw new BadRequestException('calificacionKPI debe ser un número');
     }
-  
+
     if (calificacionKPI < 0 || calificacionKPI > 300) {
       throw new BadRequestException('La calificación debe estar entre 0 y 300');
     }
-  
-    const { nombre } = await this.authService.getUsuarioActual(headers);
+
+    
+    const usuario = await this.authService.getUsuarioActual(headers);
+
+    
     const kpi = await this.kpiRepository.findOne({ where: { cedula } });
-  
     if (!kpi) {
       throw new NotFoundException(`No se encontró KPI para la cédula ${cedula}`);
     }
-  
+
     
-    return this.kpiRepository.save({
-      ...kpi,
-      calificacionKPI,
-      totalKPI: (kpi.kpi * calificacionKPI) / 100,
-      observaciones,
-      usuarioCalificador: nombre,
-      fechaCalificacion: new Date()
-    });
+    kpi.calificacionKPI = calificacionKPI;
+    kpi.totalKPI = (kpi.kpi * calificacionKPI) / 100;
+    kpi.observaciones = observaciones;
+    kpi.usuarioCalificador = usuario.nombre;
+    kpi.fechaCalificacion = new Date();
+
+    return this.kpiRepository.save(kpi);
   }
 }

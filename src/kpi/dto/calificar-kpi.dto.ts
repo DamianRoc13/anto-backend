@@ -1,4 +1,4 @@
-import { IsNumber, IsString, Min, Max } from 'class-validator';
+import { IsNumber, IsOptional, Max, Min } from 'class-validator';
 
 export class CalificarKpiDto {
   @IsNumber()
@@ -6,6 +6,6 @@ export class CalificarKpiDto {
   @Max(300)
   calificacionKPI: number;
 
-  @IsString()
-  observaciones: string; 
+  @IsOptional()
+  observaciones?: string;
 }

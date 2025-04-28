@@ -5,8 +5,9 @@ import { AprobarKpiDto } from './dto/aprobar-kpi.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { Request } from 'express';
+
 
 @ApiTags('KPI Management')
 @ApiBearerAuth()
@@ -23,16 +24,53 @@ export class KpiController {
   }
 
   @Put('calificar/:cedula')
-async calificar(
-  @Param('cedula') cedula: string,
-  @Body() dto: { calificacionKPI: number; observaciones: string }, 
-  @Headers() headers: Record<string, string>
-) {
-  if (!dto.calificacionKPI) {
-    throw new BadRequestException('El campo calificacionKPI es requerido');
+  @ApiOperation({ 
+    summary: 'Calificar un empleado', 
+    description: 'Endpoint para asignar una calificación KPI a un empleado específico' 
+  })
+  @ApiParam({
+    name: 'cedula',
+    type: String,
+    description: 'Cédula del empleado a calificar',
+    example: '0921611760'
+  })
+  @ApiBody({ 
+    type: CalificarKpiDto,
+    examples: {
+      ejemplo1: {
+        summary: 'Calificación básica',
+        value: { calificacionKPI: 250 }
+      },
+      ejemplo2: {
+        summary: 'Calificación con observaciones',
+        value: { calificacionKPI: 280, observaciones: "Superó expectativas" }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Calificación registrada exitosamente' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Datos inválidos o calificación fuera de rango (0-300)' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Empleado no encontrado' 
+  })
+  async calificar(
+    @Param('cedula') cedula: string,
+    @Body() dto: CalificarKpiDto,
+    @Headers() headers: Record<string, string>
+  ) {
+    return this.kpiService.calificar(
+      cedula,
+      dto.calificacionKPI,
+      dto.observaciones || '',
+      headers
+    );
   }
-  return this.kpiService.calificar(cedula, dto.calificacionKPI, dto.observaciones, headers);
-}
 
   @Put('aprobar/:id')
   @Roles('admin')
