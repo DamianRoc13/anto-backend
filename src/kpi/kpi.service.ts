@@ -138,7 +138,7 @@ export class KpiService {
     return await this.commitKpiRepository.save(commit);
   }
 
-  async firstApproveCommit(id: string, user: User): Promise<CommitKpi> {
+  async firstApproveCommit(id: string, user: { name: string }): Promise<CommitKpi> {
     const commit = await this.commitKpiRepository.findOne({ where: { id } });
     
     if (!commit) {
@@ -156,7 +156,7 @@ export class KpiService {
     return this.commitKpiRepository.save(commit);
   }
 
-  async secondApproveCommit(id: string, dto: ApproveCommitKpiDto, user: User): Promise<KPI> {
+  async secondApproveCommit(id: string, dto: ApproveCommitKpiDto, user: { name: string }): Promise<KPI> {
     const commit = await this.commitKpiRepository.findOne({ where: { id } });
     
     if (!commit) throw new NotFoundException('Commit no encontrado');

@@ -12,13 +12,17 @@ import { ApproveCommitKpiDto } from './dto/approve-commit-kpi.dto';
 import { User } from '@users/user.entity';
 import { CommitKpi } from './entities/commit-kpi.entity';
 import { KPI } from './entities/kpi.entity';
+import { AuthService } from '../auth/auth.service';
 
 @ApiTags('KPI Management')
 @ApiBearerAuth()
 @Controller('kpi')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class KpiController {
-  constructor(private readonly kpiService: KpiService) {}
+  constructor(
+    private readonly kpiService: KpiService,
+    private readonly authService: AuthService
+  ) {}
 
   @Post('sync-headcount')
   @Roles('admin')
@@ -118,17 +122,16 @@ async createCommit(
   }
 
   @Put('commits/:id/first-approval')
-  @ApiOperation({ summary: 'Primera aprobación de commit' })
-  async firstApproveCommit(
-    @Param('id') id: string,
-    @Req() req: Request
-  ) {
-    const user = req.user as User | undefined;
-    if (!user) {
-      throw new BadRequestException('Usuario no autenticado');
-    }
-    return this.kpiService.firstApproveCommit(id, user);
-  }
+@ApiOperation({ summary: 'Primera aprobación de commit' })
+async firstApproveCommit(
+  @Param('id') id: string,
+  @Headers() headers: Record<string, string>
+) {
+  const rawUser = await this.authService.getUsuarioActual(headers);
+  const user: User = { name: rawUser.nombre } as User;
+  return this.kpiService.firstApproveCommit(id, user);
+}
+
 
   @Put('commits/:id/second-approval')
 @Roles('admin')
@@ -153,9 +156,10 @@ async createCommit(
 async secondApproveCommit(
   @Param('id') id: string,
   @Body() dto: ApproveCommitKpiDto,
-  @Req() req: Request
+  @Headers() headers: Record<string, string>
 ) {
-  const user = req.user as User;
+  const rawUser = await this.authService.getUsuarioActual(headers);
+  const user: User = { name: rawUser.nombre } as User;
   return this.kpiService.secondApproveCommit(id, dto, user);
 }
 
