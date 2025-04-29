@@ -7,7 +7,11 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { Request } from 'express';
-
+import { CreateCommitKpiDto } from './dto/create-commit-kpi.dto';
+import { ApproveCommitKpiDto } from './dto/approve-commit-kpi.dto';
+import { User } from '@users/user.entity';
+import { CommitKpi } from './entities/commit-kpi.entity';
+import { KPI } from './entities/kpi.entity';
 
 @ApiTags('KPI Management')
 @ApiBearerAuth()
@@ -72,13 +76,95 @@ export class KpiController {
     );
   }
 
-  @Put('aprobar/:id')
-  @Roles('admin')
-  @ApiOperation({ summary: 'Aprobar/Rechazar KPI' })
-  async aprobar(
-    @Param('id') id: number,
-    @Body() dto: AprobarKpiDto
+  @Post('commits/:cedula')
+@ApiOperation({ summary: 'Crear commit de calificación' })
+@ApiParam({
+  name: 'cedula',
+  type: String,
+  description: 'Cédula del empleado a calificar',
+  example: '0921611760',  
+  required: true
+})
+@ApiBody({
+  description: 'Datos de calificación',
+  type: CreateCommitKpiDto,
+  examples: {
+    ejemplo1: {
+      value: {
+        calificacionKPI: 150,
+        observaciones: "Desempeño aceptable"
+      }
+    }
+  }
+})
+@ApiResponse({
+  status: 201,
+  description: 'Commit creado exitosamente',
+  type: CommitKpi
+})
+async createCommit(
+  @Param('cedula') cedula: string,
+  @Body() dto: CreateCommitKpiDto,
+  @Req() req: Request
+) {
+  const user = req.user as User;
+  return this.kpiService.createCommit(cedula, dto, user);
+}
+
+  @Get('commits/pending')
+  @ApiOperation({ summary: 'Obtener commits pendientes' })
+  async getPendingCommits() {
+    return this.kpiService.getPendingCommits();
+  }
+
+  @Put('commits/:id/first-approval')
+  @ApiOperation({ summary: 'Primera aprobación de commit' })
+  async firstApproveCommit(
+    @Param('id') id: string,
+    @Req() req: Request
   ) {
-    return this.kpiService.procesarAprobacion(id, dto);
+    const user = req.user as User | undefined;
+    if (!user) {
+      throw new BadRequestException('Usuario no autenticado');
+    }
+    return this.kpiService.firstApproveCommit(id, user);
+  }
+
+  @Put('commits/:id/second-approval')
+@Roles('admin')
+@ApiOperation({ summary: 'Aprobar commit definitivamente' })
+@ApiBody({
+  type: ApproveCommitKpiDto,
+  examples: {
+    aprobar: { value: { action: 'approve' }},
+    rechazar: { 
+      value: { 
+        action: 'reject',
+        rejectionReason: "La calificación no cumple con los estándares"
+      }
+    }
+  }
+})
+@ApiResponse({ 
+  status: 200,
+  description: 'Commit aprobado y calificación registrada en KPI',
+  type: KPI
+})
+async secondApproveCommit(
+  @Param('id') id: string,
+  @Body() dto: ApproveCommitKpiDto,
+  @Req() req: Request
+) {
+  const user = req.user as User;
+  return this.kpiService.secondApproveCommit(id, dto, user);
+}
+
+  @Put('commits/:id')
+  @ApiOperation({ summary: 'Editar commit pendiente' })
+  async updateCommit(
+    @Param('id') id: string,
+    @Body() dto: CreateCommitKpiDto
+  ) {
+    return this.kpiService.updateCommit(id, dto);
   }
 }
