@@ -41,16 +41,13 @@ export class KpiService {
   }
   
   private async generateTokenForUser(user: User): Promise<string> {
-    // Si usas JWT
     const payload = { 
       sub: user.id, 
       name: user.name,
       role: user.role 
     };
-    return this.jwtService.sign(payload); // Asegúrate de inyectar JwtService
+    return this.jwtService.sign(payload); 
     
-    // O si prefieres simular el header:
-    // return 'simulated-token-' + user.id;
   }
 
   async syncFromHeadcount(): Promise<{ updated: number }> {
@@ -117,10 +114,9 @@ export class KpiService {
   }
 
   async createCommit(cedula: string, dto: CreateCommitKpiDto, user: User): Promise<CommitKpi> {
-    // Obtener datos del empleado desde KPI
     const empleado = await this.kpiRepository.findOne({ 
       where: { cedula },
-      select: ['nombre', 'cargoActividad', 'kpi'] // Solo los campos necesarios
+      select: ['nombre', 'cargoActividad', 'kpi'] 
     });
   
     if (!empleado) {
@@ -180,18 +176,16 @@ export class KpiService {
       throw new BadRequestException('Commit rechazado');
     }
   
-    // Actualizar KPI directamente sin llamar a calificar()
     const kpi = await this.kpiRepository.findOne({ where: { cedula: commit.cedula } });
     if (!kpi) throw new NotFoundException('Empleado no encontrado en KPI');
   
     kpi.calificacionKPI = commit.calificacionKPI;
     kpi.totalKPI = (kpi.kpi * commit.calificacionKPI) / 100;
     kpi.observaciones = commit.observaciones || '';
-    kpi.usuarioCalificador = commit.firstApprovalBy || user.name; // Usa el primer aprobador o el actual
+    kpi.usuarioCalificador = commit.firstApprovalBy || user.name; 
     kpi.fechaCalificacion = new Date();
     kpi.estado = 'aprobado';
   
-    // Actualizar estado del commit
     commit.status = 'approved';
     commit.secondApprovalBy = user.name;
     commit.secondApprovalAt = new Date();

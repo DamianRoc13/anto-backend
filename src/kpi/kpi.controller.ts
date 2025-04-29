@@ -159,12 +159,52 @@ async secondApproveCommit(
   return this.kpiService.secondApproveCommit(id, dto, user);
 }
 
-  @Put('commits/:id')
-  @ApiOperation({ summary: 'Editar commit pendiente' })
-  async updateCommit(
-    @Param('id') id: string,
-    @Body() dto: CreateCommitKpiDto
-  ) {
-    return this.kpiService.updateCommit(id, dto);
+@Put('commits/:id')
+@ApiOperation({ 
+  summary: 'Editar commit pendiente', 
+  description: 'Actualiza la calificación y/o observaciones de un commit en estado pendiente (pending_first o pending_second)' 
+})
+@ApiParam({
+  name: 'id',
+  type: String,
+  description: 'ID del commit (UUID)',
+  example: '4d717484-ae18-4d39-bde6-4b9804922d9c'
+})
+@ApiBody({
+  type: CreateCommitKpiDto,
+  examples: {
+    ejemplo1: {
+      summary: 'Actualizar solo calificación',
+      value: {
+        calificacionKPI: 185
+      }
+    },
+    ejemplo2: {
+      summary: 'Actualizar ambos campos',
+      value: {
+        calificacionKPI: 210,
+        observaciones: "Ajuste según retroalimentación del supervisor"
+      }
+    }
   }
+})
+@ApiResponse({ 
+  status: 200, 
+  description: 'Commit actualizado exitosamente',
+  type: CommitKpi 
+})
+@ApiResponse({ 
+  status: 400, 
+  description: 'Error de validación: calificación fuera de rango (0-300) o commit no editable' 
+})
+@ApiResponse({ 
+  status: 404, 
+  description: 'Commit no encontrado' 
+})
+async updateCommit(
+  @Param('id') id: string,
+  @Body() dto: CreateCommitKpiDto
+) {
+  return this.kpiService.updateCommit(id, dto);
+}
 }
