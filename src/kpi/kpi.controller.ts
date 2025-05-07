@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards, Req, Headers, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, UseGuards, Req, Headers, BadRequestException, Query } from '@nestjs/common';
 import { KpiService } from './kpi.service';
 import { CalificarKpiDto } from './dto/calificar-kpi.dto';
 import { AprobarKpiDto } from './dto/aprobar-kpi.dto';
@@ -23,6 +23,18 @@ export class KpiController {
     private readonly kpiService: KpiService,
     private readonly authService: AuthService
   ) {}
+
+  @Get()
+@ApiOperation({ summary: 'Obtener todos los registros KPI sin filtrar' })
+@ApiResponse({ 
+  status: 200, 
+  description: 'Lista completa de KPIs',
+  type: KPI,
+  isArray: true 
+})
+async findAll(): Promise<KPI[]> {
+  return this.kpiService.findAll();
+}
 
   @Post('sync-headcount')
   @Roles('admin')
@@ -160,6 +172,11 @@ async secondApproveCommit(
 ) {
   const rawUser = await this.authService.getUsuarioActual(headers);
   const user: User = { name: rawUser.nombre } as User;
+
+  if (dto.action === 'reject' && (!dto.rejectionReason || dto.rejectionReason.trim() === '')) {
+    throw new BadRequestException('Debe especificar un motivo para el rechazo');
+  }
+
   return this.kpiService.secondApproveCommit(id, dto, user);
 }
 

@@ -50,6 +50,16 @@ export class KpiService {
     
   }
 
+  async findAll(): Promise<KPI[]> {
+    return this.kpiRepository.find({ 
+      where: { kpi: MoreThan(0) }, 
+      order: { 
+        cargoActividad: 'ASC',
+        nombre: 'ASC' 
+      }
+    });
+  }
+
   async syncFromHeadcount(): Promise<{ updated: number }> {
     const headcounts = await this.headcountRepository.find({ 
       where: { kpi: MoreThan(0) }
