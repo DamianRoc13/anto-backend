@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { KPI } from './kpi/entities/kpi.entity';
 import { Headcount } from './headcount/entities/headcount.entity';
+import { JefeArea } from './jefe-area/entities/jefe-area.entity';
 
 config(); // Carga las variables de entorno
 
@@ -19,7 +20,7 @@ export const AppDataSource = new DataSource({
   username: dbUrl.username,
   password: dbUrl.password,
   database: dbUrl.pathname.split('/')[1],
-  entities: [KPI, Headcount],
+  entities: [KPI, Headcount, JefeArea],
   migrations: ['src/migrations/*.ts'],
   synchronize: process.env.NODE_ENV === 'development', // Solo en desarrollo
   ssl: {

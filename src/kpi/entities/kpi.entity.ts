@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, ManyToOne } from 'typeorm';
+import { JefeArea } from '../../jefe-area/entities/jefe-area.entity';
 
 @Entity()
 @Unique(['cedula']) // Añade esta línea para crear una restricción única en la columna cedula
@@ -56,6 +57,6 @@ export class KPI {
   @Column({ default: '' })
   usuarioCalificador: string;
 
-  @Column({ default: '' }) 
-  jefeArea: string;
+  @ManyToOne(() => JefeArea, (jefeArea) => jefeArea.kpis, { nullable: true })
+  jefeArea: JefeArea;
 }

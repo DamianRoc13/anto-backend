@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HeadcountModule } from './headcount/headcount.module';
 import { KpiModule } from './kpi/kpi.module';
+import { JefeAreaModule } from './jefe-area/jefe-area.module';
 
 @Module({
   imports: [
@@ -12,11 +13,9 @@ import { KpiModule } from './kpi/kpi.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        
         const databaseUrl = configService.get<string>('DATABASE_URL');
         if (databaseUrl) {
           return {
@@ -26,10 +25,10 @@ import { KpiModule } from './kpi/kpi.module';
               rejectUnauthorized: false,
             },
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: configService.get<string>('NODE_ENV') !== 'production', 
+            synchronize: configService.get<string>('NODE_ENV') !== 'production',
             extra: {
-              connectionLimit: 10, 
-            }
+              connectionLimit: 10,
+            },
           };
         }
 
@@ -47,16 +46,16 @@ import { KpiModule } from './kpi/kpi.module';
           synchronize: configService.get<string>('NODE_ENV') !== 'production',
           extra: {
             connectionLimit: 10,
-          }
+          },
         };
       },
       inject: [ConfigService],
     }),
-    
-    AuthModule,
+    AuthModule, // Asegúrate de que AuthModule esté registrado
     UsersModule,
     HeadcountModule,
     KpiModule,
+    JefeAreaModule,
   ],
 })
 export class AppModule {}
