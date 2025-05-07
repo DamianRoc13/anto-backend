@@ -19,13 +19,11 @@ import { AuthModule } from '../auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KpiController } from './kpi.controller';
 
-
-
 @Injectable()
 export class KpiService {
   constructor(
     @InjectRepository(KPI)
-    private kpiRepository: Repository<KPI>,
+    private readonly kpiRepository: Repository<KPI>,
     @InjectRepository(Headcount)
     private headcountRepository: Repository<Headcount>,
     @InjectRepository(CommitKpi)
@@ -34,7 +32,6 @@ export class KpiService {
     private authService: AuthService,
     private jwtService: JwtService
   ) {}
-
 
   procesarAprobacion(id: number, dto: AprobarKpiDto): any {
     return { message: `KPI with ID ${id} processed successfully`, data: dto };
@@ -47,24 +44,20 @@ export class KpiService {
       role: user.role 
     };
     return this.jwtService.sign(payload); 
-    
   }
 
-  async findAll(): Promise<KPI[]> {
-    return this.kpiRepository.find({ 
-      where: { kpi: MoreThan(0) }, 
-      order: { 
-        cargoActividad: 'ASC',
-        nombre: 'ASC' 
-      }
-    });
+  async findAll(): Promise<any[]> {
+    const kpis = await this.kpiRepository.find({ relations: ['jefeArea'] }); // Carga la relación jefeArea
+    return kpis.map((kpi) => ({
+      ...kpi,
+      jefeAreaId: kpi.jefeArea ? kpi.jefeArea.id : null, // Incluye jefeAreaId en la respuesta
+    }));
   }
 
   async syncFromHeadcount(): Promise<{ updated: number }> {
     const headcounts = await this.headcountRepository.find({ 
       where: { kpi: MoreThan(0) }
     });
-  
     let updated = 0;
     for (const hc of headcounts) {
       await this.kpiRepository.upsert(
@@ -72,14 +65,14 @@ export class KpiService {
           cedula: hc.cedula,
           nombre: hc.nombre,
           cargoActividad: hc.cargoActividad,
+          grupoCentrosCostos: hc.grupoCentrosCostos || 'Sin grupo', 
           sueldo: hc.sueldo,
           kpi: hc.kpi,
-          grupoCentrosCostos: hc.grupoCentrosCostos || 'Sin grupo', 
           calificacionKPI: 0,
           totalKPI: 0,
-          observaciones: '',
           estado: 'pendiente',
           usuarioCalificador: 'sistema',
+          observaciones: '',
           fechaCalificacion: new Date()
         },
         ['cedula']
@@ -94,25 +87,19 @@ export class KpiService {
     calificacionKPI: number,
     observaciones: string,
     headers: Record<string, string>
-  ): Promise<KPI> {
-   
+  ): Promise<KPI> {   
     if (isNaN(calificacionKPI)) {
       throw new BadRequestException('calificacionKPI debe ser un número');
     }
-
     if (calificacionKPI < 0 || calificacionKPI > 300) {
-      throw new BadRequestException('La calificación debe estar entre 0 y 300');
+      throw new BadRequestException('La calificación debe estar entre 0 y 300');    
     }
-
     
     const usuario = await this.authService.getUsuarioActual(headers);
-
-    
     const kpi = await this.kpiRepository.findOne({ where: { cedula } });
     if (!kpi) {
       throw new NotFoundException(`No se encontró KPI para la cédula ${cedula}`);
     }
-
     
     kpi.calificacionKPI = calificacionKPI;
     kpi.totalKPI = (kpi.kpi * calificacionKPI) / 100;
@@ -128,7 +115,6 @@ export class KpiService {
       where: { cedula },
       select: ['nombre', 'cargoActividad', 'kpi'] 
     });
-  
     if (!empleado) {
       throw new NotFoundException(`No se encontró empleado con cédula ${cedula}`);
     }
@@ -150,11 +136,9 @@ export class KpiService {
 
   async firstApproveCommit(id: string, user: { name: string }): Promise<CommitKpi> {
     const commit = await this.commitKpiRepository.findOne({ where: { id } });
-    
     if (!commit) {
       throw new NotFoundException('Commit no encontrado');
     }
-
     if (commit.status !== 'pending_first') {
       throw new BadRequestException('El commit no está en estado pendiente de primera aprobación');
     }
@@ -168,12 +152,10 @@ export class KpiService {
 
   async secondApproveCommit(id: string, dto: ApproveCommitKpiDto, user: { name: string }): Promise<KPI> {
     const commit = await this.commitKpiRepository.findOne({ where: { id } });
-    
     if (!commit) throw new NotFoundException('Commit no encontrado');
     if (commit.status !== 'pending_second') {
       throw new BadRequestException('El commit debe estar en pending_second');
     }
-  
     if (dto.action === 'reject') {
       if (!dto.rejectionReason) {
         throw new BadRequestException('Debe proporcionar una razón de rechazo');
@@ -199,7 +181,6 @@ export class KpiService {
     commit.status = 'approved';
     commit.secondApprovalBy = user.name;
     commit.secondApprovalAt = new Date();
-    
     await this.commitKpiRepository.save(commit);
     return this.kpiRepository.save(kpi);
   }
@@ -214,24 +195,20 @@ export class KpiService {
 
   async updateCommit(id: string, dto: CreateCommitKpiDto): Promise<CommitKpi> {
     const commit = await this.commitKpiRepository.findOne({ where: { id } });
-    
     if (!commit) {
       throw new NotFoundException('Commit no encontrado');
     }
-
     if (!['pending_first', 'pending_second'].includes(commit.status)) {
       throw new BadRequestException('Solo se pueden editar commits pendientes');
     }
 
     const totalKPI = (dto.calificacionKPI * 100) / 100;
-
     commit.calificacionKPI = dto.calificacionKPI;
     commit.totalKPI = totalKPI;
     commit.observaciones = dto.observaciones || '';
 
     return this.commitKpiRepository.save(commit);
   }
-
 }
 
 @Module({

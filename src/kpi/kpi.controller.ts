@@ -13,11 +13,12 @@ import { User } from '@users/user.entity';
 import { CommitKpi } from './entities/commit-kpi.entity';
 import { KPI } from './entities/kpi.entity';
 import { AuthService } from '../auth/auth.service';
+import { AuthGuard } from '@nestjs/passport';
 
-@ApiTags('KPI Management')
+@ApiTags('KPI')
 @ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('kpi')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class KpiController {
   constructor(
     private readonly kpiService: KpiService,
@@ -25,16 +26,13 @@ export class KpiController {
   ) {}
 
   @Get()
-@ApiOperation({ summary: 'Obtener todos los registros KPI sin filtrar' })
-@ApiResponse({ 
-  status: 200, 
-  description: 'Lista completa de KPIs',
-  type: KPI,
-  isArray: true 
-})
-async findAll(): Promise<KPI[]> {
-  return this.kpiService.findAll();
-}
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de todos los KPI.',
+  })
+  async findAll() {
+    return this.kpiService.findAll();
+  }
 
   @Post('sync-headcount')
   @Roles('admin')
