@@ -17,7 +17,7 @@ import {
   import { Roles } from '../auth/roles.decorator';
   import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
   
-  @ApiTags('KPI - Headcount Management')
+  @ApiTags('Headcount Management')
   @ApiBearerAuth()
   @Controller('headcount')
   @UseGuards(JwtAuthGuard) // Autenticación básica para todos los endpoints

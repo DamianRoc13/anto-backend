@@ -55,4 +55,7 @@ export class KPI {
 
   @Column({ default: '' })
   usuarioCalificador: string;
+
+  @Column({ default: '' }) 
+  jefeArea: string;
 }
