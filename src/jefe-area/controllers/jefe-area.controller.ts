@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { JefeAreaService } from '../services/jefe-area.service';
 import { CreateJefeAreaDto } from '../dto/create-jefe-area.dto';
 import { JefeArea } from '../entities/jefe-area.entity';
@@ -34,5 +34,23 @@ export class JefeAreaController {
   })
   async findAll() {
     return this.jefeAreaService.findAll();
+  }
+
+  @Delete(':id')
+  @ApiParam({
+    name: 'id',
+    description: 'Cédula del jefe de área a eliminar (10 dígitos)',
+    example: '0123456789',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Jefe de área eliminado exitosamente.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Jefe de área no encontrado.',
+  })
+  async delete(@Param('id') id: string) {
+    return this.jefeAreaService.delete(id);
   }
 }

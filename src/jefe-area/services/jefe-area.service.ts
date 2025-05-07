@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JefeArea } from '../entities/jefe-area.entity';
@@ -18,5 +18,13 @@ export class JefeAreaService {
 
   async findAll(): Promise<JefeArea[]> {
     return this.jefeAreaRepository.find();
+  }
+
+  async delete(id: string): Promise<{ message: string }> {
+    const result = await this.jefeAreaRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Jefe de área con id ${id} no encontrado.`);
+    }
+    return { message: `Jefe de área con id ${id} eliminado exitosamente.` };
   }
 }
