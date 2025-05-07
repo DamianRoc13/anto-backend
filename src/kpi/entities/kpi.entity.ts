@@ -58,5 +58,5 @@ export class KPI {
   usuarioCalificador: string;
 
   @ManyToOne(() => JefeArea, (jefeArea) => jefeArea.kpis, { nullable: true })
-  jefeArea: JefeArea;
+  jefeArea: JefeArea | null;
 }

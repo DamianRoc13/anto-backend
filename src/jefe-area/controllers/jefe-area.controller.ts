@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { JefeAreaService } from '../services/jefe-area.service';
 import { CreateJefeAreaDto } from '../dto/create-jefe-area.dto';
@@ -52,5 +52,39 @@ export class JefeAreaController {
   })
   async delete(@Param('id') id: string) {
     return this.jefeAreaService.delete(id);
+  }
+
+  @Patch(':id/asignar-kpis')
+  @ApiParam({
+    name: 'id',
+    description: 'Cédula del jefe de área',
+    example: '0123456789',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'KPI(s) asignados exitosamente al jefe de área.',
+  })
+  async assignKpis(
+    @Param('id') id: string,
+    @Body() kpiIds: string[], // Lista de IDs de KPI a asignar
+  ) {
+    return this.jefeAreaService.assignKpis(id, kpiIds);
+  }
+
+  @Patch(':id/remover-kpis')
+  @ApiParam({
+    name: 'id',
+    description: 'Cédula del jefe de área',
+    example: '0123456789',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'KPI(s) removidos exitosamente del jefe de área.',
+  })
+  async removeKpis(
+    @Param('id') id: string,
+    @Body() kpiIds: string[], // Lista de IDs de KPI a remover
+  ) {
+    return this.jefeAreaService.removeKpis(id, kpiIds);
   }
 }

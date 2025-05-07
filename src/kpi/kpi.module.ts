@@ -14,5 +14,6 @@ import { CommitKpi } from './entities/commit-kpi.entity';
   ],
   controllers: [KpiController],
   providers: [KpiService],
+  exports: [TypeOrmModule], // Exporta TypeOrmModule para que otros módulos puedan usar el repositorio de KPI
 })
 export class KpiModule {}
