@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HeadcountModule } from './headcount/headcount.module';
 import { KpiModule } from './kpi/kpi.module';
 import { JefeAreaModule } from './jefe-area/jefe-area.module';
+import { HistorialKpiModule } from './historial-kpi/historial-kpi.module';
 
 @Module({
   imports: [
@@ -51,11 +52,12 @@ import { JefeAreaModule } from './jefe-area/jefe-area.module';
       },
       inject: [ConfigService],
     }),
-    AuthModule, // Asegúrate de que AuthModule esté registrado
+    AuthModule,
     UsersModule,
     HeadcountModule,
     KpiModule,
     JefeAreaModule,
+    HistorialKpiModule,
   ],
 })
 export class AppModule {}
